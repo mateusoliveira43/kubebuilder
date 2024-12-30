@@ -19,8 +19,13 @@ package v1
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	kbatchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	batchv1 "tutorial.kubebuilder.io/project/api/v1"
+	batchv2 "tutorial.kubebuilder.io/project/api/v2"
 	// TODO (user): Add any additional imports if needed
 )
 
@@ -165,13 +170,41 @@ var _ = Describe("CronJob Webhook", func() {
 	})
 
 	Context("When creating CronJob under Conversion Webhook", func() {
-		// TODO (user): Add logic to convert the object to the desired version and verify the conversion
-		// Example:
-		// It("Should convert the object correctly", func() {
-		//     convertedObj := &batchv1.CronJob{}
-		//     Expect(obj.ConvertTo(convertedObj)).To(Succeed())
-		//     Expect(convertedObj).ToNot(BeNil())
-		// })
+		It("Should convert the object correctly", func() {
+			testNamespaceName := "test-namespace"
+			Expect(k8sClient.Create(ctx, &corev1.Namespace{
+				ObjectMeta: v1.ObjectMeta{
+					Name: testNamespaceName,
+				},
+			})).To(Succeed())
+
+			cronJobv1 := &batchv1.CronJob{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "example-v1",
+					Namespace: testNamespaceName,
+				},
+				Spec: batchv1.CronJobSpec{
+					Schedule: "*/1 * * * *",
+					JobTemplate: kbatchv1.JobTemplateSpec{
+						Spec: kbatchv1.JobSpec{
+							Template: corev1.PodTemplateSpec{
+								Spec: corev1.PodSpec{
+									Containers: []corev1.Container{},
+								},
+							},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, cronJobv1)).To(Succeed())
+
+			cronJobv2 := &batchv2.CronJob{}
+			Expect(k8sClient.Get(ctx, types.NamespacedName{
+				Name:      "example-v1",
+				Namespace: testNamespaceName,
+			}, cronJobv2)).To(Succeed())
+			Expect(cronJobv2).ToNot(BeNil())
+		})
 	})
 
 })

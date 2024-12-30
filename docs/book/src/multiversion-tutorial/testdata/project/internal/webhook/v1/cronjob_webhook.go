@@ -41,7 +41,7 @@ import (
 Next, we'll setup a logger for the webhooks.
 */
 
-var cronjoblog = logf.Log.WithName("cronjob-resource")
+var cronjoblog = logf.Log.WithName("cronjob-resource-v1")
 
 /*
 This setup doubles as setup for our conversion webhooks: as long as our
@@ -108,7 +108,7 @@ func (d *CronJobCustomDefaulter) Default(ctx context.Context, obj runtime.Object
 	if !ok {
 		return fmt.Errorf("expected an CronJob object but got %T", obj)
 	}
-	cronjoblog.Info("Defaulting for CronJob", "name", cronjob.GetName())
+	cronjoblog.Info("Defaulting for CronJob", "name", cronjob.GetName(), "namespace", cronjob.GetNamespace())
 
 	// Set default values
 	d.applyDefaults(cronjob)
@@ -178,7 +178,7 @@ func (v *CronJobCustomValidator) ValidateCreate(ctx context.Context, obj runtime
 	if !ok {
 		return nil, fmt.Errorf("expected a CronJob object but got %T", obj)
 	}
-	cronjoblog.Info("Validation for CronJob upon creation", "name", cronjob.GetName())
+	cronjoblog.Info("Validation for CronJob upon creation", "name", cronjob.GetName(), "namespace", cronjob.GetNamespace())
 
 	return nil, validateCronJob(cronjob)
 }
@@ -189,7 +189,7 @@ func (v *CronJobCustomValidator) ValidateUpdate(ctx context.Context, oldObj, new
 	if !ok {
 		return nil, fmt.Errorf("expected a CronJob object for the newObj but got %T", newObj)
 	}
-	cronjoblog.Info("Validation for CronJob upon update", "name", cronjob.GetName())
+	cronjoblog.Info("Validation for CronJob upon update", "name", cronjob.GetName(), "namespace", cronjob.GetNamespace())
 
 	return nil, validateCronJob(cronjob)
 }
@@ -200,7 +200,7 @@ func (v *CronJobCustomValidator) ValidateDelete(ctx context.Context, obj runtime
 	if !ok {
 		return nil, fmt.Errorf("expected a CronJob object but got %T", obj)
 	}
-	cronjoblog.Info("Validation for CronJob upon deletion", "name", cronjob.GetName())
+	cronjoblog.Info("Validation for CronJob upon deletion", "name", cronjob.GetName(), "namespace", cronjob.GetNamespace())
 
 	// TODO(user): fill in your validation logic upon object deletion.
 

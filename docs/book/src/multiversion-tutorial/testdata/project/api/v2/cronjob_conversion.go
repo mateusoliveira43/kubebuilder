@@ -28,12 +28,13 @@ import (
 	"fmt"
 	"strings"
 
-	"log"
-
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	batchv1 "tutorial.kubebuilder.io/project/api/v1"
 ) // +kubebuilder:docs-gen:collapse=Imports
+
+var cronjoblog = logf.Log.WithName("cronjob-resource")
 
 /*
 Our "spoke" versions need to implement the
@@ -50,8 +51,10 @@ Most of the conversion is straightforward copying, except for converting our cha
 // ConvertTo converts this CronJob (v2) to the Hub version (v1).
 func (src *CronJob) ConvertTo(dstRaw conversion.Hub) error {
 	dst := dstRaw.(*batchv1.CronJob)
-	log.Printf("ConvertTo: Converting CronJob from Spoke version v2 to Hub version v1;"+
-		"source: %s/%s, target: %s/%s", src.Namespace, src.Name, dst.Namespace, dst.Name)
+	cronjoblog.Info(
+		"ConvertTo: Converting CronJob from Spoke version v2 to Hub version v1",
+		"name", src.GetName(), "namespace", src.GetNamespace(),
+	)
 
 	sched := src.Spec.Schedule
 	scheduleParts := []string{"*", "*", "*", "*", "*"}
@@ -102,8 +105,10 @@ Most of the conversion is straightforward copying, except for converting our cha
 // ConvertFrom converts the Hub version (v1) to this CronJob (v2).
 func (dst *CronJob) ConvertFrom(srcRaw conversion.Hub) error {
 	src := srcRaw.(*batchv1.CronJob)
-	log.Printf("ConvertFrom: Converting CronJob from Hub version v1 to Spoke version v2;"+
-		"source: %s/%s, target: %s/%s", src.Namespace, src.Name, dst.Namespace, dst.Name)
+	cronjoblog.Info(
+		"ConvertFrom: Converting CronJob from Hub version v1 to Spoke version v2",
+		"name", src.GetName(), "namespace", src.GetNamespace(),
+	)
 
 	schedParts := strings.Split(src.Spec.Schedule, " ")
 	if len(schedParts) != 5 {
